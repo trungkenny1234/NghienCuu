@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Tạo Prompt Minh Họa Truyện</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        textarea {
+            width: 100%;
+            padding: 15px 18px;
+            border: none;
+            border-bottom: 2px solid var(--primary-color);
+            border-radius: 10px;
+            font-size: 16px;
+            background-color: #fcfdff;
+            color: #333;
+            transition: all 0.3s ease;
+            /* Các thuộc tính dành riêng cho textarea */
+            resize: vertical;
+            min-height: 200px;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-bottom: 2px solid var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(74, 111, 165, 0.15);
+        }
+        
+         :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6b8cae;
+            --accent-color: #ff6b6b;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --success-color: #28a745;
+            --background-color: #eaf1f8;
+            --card-bg: #fff;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #4a4a4a;
+            background-color: var(--background-color);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        h2 {
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .description {
+            color: #666;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .select-container,
+        .role-container {
+            margin-bottom: 30px;
+        }
+        
+        select,
+        input[type="text"] {
+            width: 100%;
+            padding: 15px 18px;
+            border: none;
+            border-bottom: 2px solid var(--primary-color);
+            border-radius: 10px;
+            font-size: 16px;
+            background-color: #fcfdff;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        select {
+            cursor: pointer;
+        }
+        
+        select:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-bottom: 2px solid var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(74, 111, 165, 0.15);
+        }
+        
+        #questions {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        #questions.visible {
+            display: block;
+            opacity: 1;
+            margin-top: 20px;
+        }
+        
+        .question {
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid var(--secondary-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .question p {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--dark-color);
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: center;
+            /* Căn giữa các nút */
+            gap: 80px;
+            /* Tăng khoảng cách giữa các nút */
+            margin-top: 30px;
+            /* Tăng khoảng cách trên */
+            flex-wrap: wrap;
+            /* Cho phép các nút xuống dòng trên màn hình nhỏ */
+        }
+        
+        .buttons button {
+            padding: 14px 28px;
+            /* Tăng kích thước padding */
+            border: none;
+            border-radius: 30px;
+            /* Làm bo tròn nút nhiều hơn */
+            cursor: pointer;
+            font-size: 16px;
+            /* Tăng kích thước font */
+            font-weight: 600;
+            /* Tăng độ đậm của chữ */
+            color: white;
+            /* Màu chữ trắng */
+            text-transform: uppercase;
+            /* Viết hoa chữ */
+            letter-spacing: 0.8px;
+            /* Tăng khoảng cách chữ */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            /* Thêm đổ bóng nhẹ */
+            transition: all 0.3s ease;
+            /* Hiệu ứng chuyển động mượt mà */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            /* Khoảng cách giữa icon và chữ */
+        }
+        /* Màu sắc và hiệu ứng riêng cho nút "Tạo Prompt" */
+        
+        .buttons button:first-child {
+            background: linear-gradient(135deg, var(--success-color) 0%, #4CAF50 100%);
+            /* Gradient màu xanh lá */
+            box-shadow: 0 5px 20px rgba(40, 167, 69, 0.3);
+            /* Đổ bóng xanh lá */
+        }
+        
+        .buttons button:first-child:hover {
+            background: linear-gradient(135deg, #4CAF50 0%, var(--success-color) 100%);
+            transform: translateY(-3px) scale(1.02);
+            /* Nút nhích lên và phóng to nhẹ */
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+        /* Màu sắc và hiệu ứng riêng cho nút "Sinh ảnh" */
+        
+        .buttons button:last-child {
+            background: linear-gradient(135deg, #2196F3 0%, var(--primary-color) 100%);
+            /* Gradient màu xanh dương */
+            box-shadow: 0 5px 20px rgba(33, 150, 243, 0.3);
+            /* Đổ bóng xanh dương */
+        }
+        
+        .buttons button:last-child:hover {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #2196F3 100%);
+            transform: translateY(-3px) scale(1.02);
+            /* Nút nhích lên và phóng to nhẹ */
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+        }
+        /* Điều chỉnh trên màn hình nhỏ */
+        
+        @media (max-width: 768px) {
+            .buttons {
+                flex-direction: column;
+                /* Xếp chồng các nút */
+                gap: 15px;
+            }
+            .buttons button {
+                width: 100%;
+                /* Các nút chiếm toàn bộ chiều rộng */
+                padding: 12px 20px;
+                font-size: 15px;
+            }
+        }
+        
+        #result {
+            margin-top: 30px;
+            padding: 25px;
+            background-color: #e9ecef;
+            border-radius: 15px;
+            display: none;
+        }
+        
+        #result.visible {
+            display: block;
+        }
+        
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .copy-btn {
+            margin-left: 10px;
+            padding: 8px 16px;
+            background-color: var(--dark-color);
+            font-size: 14px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background-color: #495057;
+            transform: translateY(-2px);
+        }
+        
+        .copy-btn.copied {
+            background-color: var(--success-color);
+        }
+        
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .suggestion-chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .suggestion-chip,
+        .sub-option-chip {
+            padding: 10px 15px;
+            background-color: #e9f2ff;
+            border: 1px solid #c2d9ff;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .suggestion-chip:hover,
+        .sub-option-chip:hover {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+        
+        .suggestion-chip.active,
+        .sub-option-chip.selected {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .sub-options-container {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #ccc;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            .buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Hệ Thống Tạo Prompt Minh Họa Truyện</h1>
+            <p class="description">Chọn bài học và trả lời các câu hỏi để tạo prompt mô tả hình ảnh minh họa</p>
+        </header>
+
+        <div class="select-container">
+            <h2><i class="fas fa-book"></i> Chọn bài:</h2>
+            <select id="selectBai">
+                <option value="">-- Chọn bài --</option>
+                <option value="1">Bài học đường đời đầu tiên</option>
+                <option value="2">Nếu cậu có một người bạn</option>
+                <option value="3">Bắt nạt</option>
+                <option value="4">Câu chuyện cổ tích về loài người</option>
+                <option value="5">Mây và Sóng</option>
+                <option value="6">Bức tranh của em gái tôi</option>
+                <option value="7">Cô bé bán diêm</option>
+                <option value="8">Gió lạnh đầu mùa</option>
+                <option value="9">Con chào mào</option>
+                <option value="10">Chùm ca dao về quê hương, đất nước</option>
+                <option value="11">Chuyện cổ tích nước mình</option>
+                <option value="12">Cây tre Việt Nam</option>
+                <option value="13">Cô Tô</option>
+                <option value="14">Hang Én</option>
+                <option value="15">Cửu Long Giang ta ơi</option>
+            </select>
+        </div>
+
+        <div id="questions">
+            <h2><i class="fas fa-question-circle"></i> Câu hỏi minh họa:</h2>
+            <form id="formQuestions"></form>
+            <div class="buttons">
+                <button type="button" onclick="submitAnswers()">
+                    <i class="fas fa-magic"></i> Tạo Prompt
+                </button>
+                <button type="button" onclick="generateImage()">
+                    <i class="fas fa-image"></i> Sinh ảnh
+                </button>
+            </div>
+        </div>
+
+        <div id="result">
+            <div class="title-container">
+                <h3><i class="fas fa-pencil-alt"></i> Prompt hoàn chỉnh:</h3>
+                <button id="copyButton" class="copy-btn" onclick="copyToClipboard()"><i class="fas fa-copy"></i> Sao
+                    chép</button>
+            </div>
+            <pre id="output"></pre>
+        </div>
+        <div id="imageResult"></div>
+    </div>
+
+    <script>
+        const IMAGE_GENERATION_API_URL = 'http://localhost:5000/generate_image';
+
+        const questionsData = {
+            1: {
+                imagePrompt: "Dế Mèn kiêu căng đứng trước hang Dế Choắt, trời nắng gắt",
+                questions: [{
+                    var: "ban_la_ai",
+                    text: "Bạn là ai?",
+                    type: "text_with_suggestions",
+                    dropdownOptions: [
+                        "Họa sĩ minh họa sách giáo khoa",
+                        "Họa sĩ truyện tranh thiếu nhi",
+                        "Nhà thiết kế đồ họa giáo dục",
+                    ]
+                }, {
+                    var: "ban_muon_lam_gi",
+                    text: "Bạn muốn làm gì?",
+                    type: "text_with_suggestions",
+                    dropdownOptions: [
+                        "Minh họa sự kiêu căng, ngạo mạn của Dế Mèn",
+                        "Nhấn mạnh sự đối lập số phận giữa Dế Mèn và Dế Choắt",
+                        "Khắc họa bi kịch và bài học ân hận của Dế Mèn"
+                    ]
+                }, {
+                    var: "ban_ve_hinh_cho_ai_xem",
+                    text: "Bạn vẽ hình cho ai xem?",
+                    type: "text_with_suggestions",
+                    dropdownOptions: [
+                        "Học sinh Tiểu học (lớp 1 - 5)",
+                        "Học sinh THCS (lớp 6 - 9)",
+                        "Học sinh THPT (lớp 10 - 12)",
+                    ]
+                }, {
+                    var: "noi_dung_chinh",
+                    text: "Nội dung chính của hình minh họa là gì?",
+                    type: "text_with_suggestion_chips",
+                    suggestionChips: [{
+                        title: "Nhân vật chính",
+                        key: "nhan_vat_chinh",
+                        options: ["Dế Mèn", "Dế Choắt"]
+                    }, {
+                        title: "Hành động",
+                        key: "hanh_dong",
+                        options: [
+                            "Đứng hiên ngang, cười chế giễu",
+                            "Ngồi cúi đầu, trầm ngâm bên hang",
+                            "Bị Chim Cốc quắp, giãy giụa"
+                        ]
+                    }, {
+                        title: "Biểu cảm",
+                        key: "bieu_cam",
+                        options: [
+                            "Cười chế giễu",
+                            "Lo sợ, hoảng hốt",
+                            "Buồn bã, ân hận",
+                            "Bỡ ngỡ, tò mò"
+                        ]
+                    }, {
+                        title: "Nhân vật phụ",
+                        key: "nhan_vat_phu",
+                        options: ["Cào Cào", "Gọng Vó", "Chim Cốc"]
+                    }, {
+                        title: "Bối cảnh",
+                        key: "boi_canh",
+                        options: [
+                            "Đồng cỏ xanh, bãi đất, miệng hang đất",
+                            "Hang tối nhỏ bé đối lập với ngoài trời sáng"
+                        ]
+                    }]
+                }, {
+                    var: "phong_cach",
+                    text: "Phong cách minh họa",
+                    type: "text_with_suggestions",
+                    dropdownOptions: [
+                        "Truyện tranh thiếu nhi",
+                        "Minh họa sách giáo khoa",
+                        "Màu nước dịu nhẹ",
+                        "Kỹ thuật số hiện đại",
+                        "Tranh cổ tích/dân gian",
+                    ]
+                }, {
+                    var: "ranh_gioi",
+                    text: "Ranh giới (Các yếu tố bắt buộc hoặc cần tránh)",
+                    type: "text_with_suggestion_chips",
+                    suggestionChips: [{
+                        title: "Góc nhìn",
+                        key: "goc_nhin",
+                        options: [
+                            "Toàn cảnh (wide shot)",
+                            "Trung cảnh (medium shot)",
+                            "Cận cảnh (close-up)",
+                            "Góc nhìn từ trên cao",
+                            "Góc nhìn từ dưới lên"
+                        ]
+                    }, {
+                        title: "Chi tiết bắt buộc",
+                        key: "chi_tiet_bat_buoc",
+                        options: [
+                            "Nét mặt Dế Mèn cười chế giễu",
+                            "Dáng đứng Dế Mèn hiên ngang, ưỡn ngực",
+                            "Cào Cào, Gọng Vó nép mình sợ hãi",
+                            "Tương phản ánh sáng trong hang và ngoài trời",
+                            "Chim Cốc quắp Dế Choắt bằng mỏ",
+                            "Dế Choắt giãy giụa, hoảng loạn",
+                            "Dế Mèn ngồi cúi đầu, râu rủ xuống",
+                        ]
+                    }, {
+                        title: "Điều cần tránh",
+                        key: "dieu_can_tranh",
+                        options: [
+                            "Tránh logo/chữ thừa",
+                            "Tránh hình ảnh bạo lực quá mức",
+                            "Tránh màu quá gắt, gây chói",
+                            "Tránh quá nhiều chi tiết phức tạp"
+                        ]
+                    }]
+                }]
+            },
+            // Thêm dữ liệu cho các bài khác tại đây
+        };
+
+        function createPrompt() {
+            const prompt = generatePrompt();
+
+            // Lưu prompt vào Local Storage
+            localStorage.setItem('generatedPrompt', prompt);
+
+            // Chuyển hướng người dùng sang trang result.html
+            window.location.href = 'promt_hoanchinh.html';
+        }
+
+        function createInputElement(q) {
+            // Thay đổi từ 'input' thành 'textarea'
+            const textInput = document.createElement("textarea");
+            textInput.name = q.var;
+            textInput.placeholder = "Nhập hoặc chọn gợi ý bên dưới...";
+            // Thuộc tính 'rows' giúp textarea có chiều cao mặc định
+            textInput.rows = 4;
+            return textInput;
+        }
+
+        function createDatalist(q, textInput) {
+            textInput.setAttribute('list', `${q.var}-suggestions`);
+            const datalist = document.createElement('datalist');
+            datalist.id = `${q.var}-suggestions`;
+            q.dropdownOptions.forEach(opt => {
+                const optionEl = document.createElement('option');
+                optionEl.value = opt;
+                datalist.appendChild(optionEl);
+            });
+            return datalist;
+        }
+
+        function createSuggestionChips(q, textInput) {
+            const chipsContainer = document.createElement('div');
+            chipsContainer.className = 'suggestion-chips-container';
+            const subOptionsContainer = document.createElement('div');
+            subOptionsContainer.className = 'sub-options-container';
+            subOptionsContainer.style.display = 'none';
+
+            q.suggestionChips.forEach(chipData => {
+                const chip = document.createElement('div');
+                chip.className = 'suggestion-chip';
+                chip.textContent = chipData.title;
+                chip.onclick = () => {
+                    chipsContainer.querySelectorAll('.suggestion-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+
+                    subOptionsContainer.innerHTML = '';
+                    subOptionsContainer.style.display = 'flex';
+                    chipData.options.forEach(optionText => {
+                        const subOption = document.createElement('div');
+                        subOption.className = 'sub-option-chip';
+                        subOption.textContent = optionText;
+                        subOption.onclick = () => {
+                            let currentVal = textInput.value.trim();
+                            const newValue = `${chipData.title}: ${optionText}`;
+
+                            let parts = currentVal.split(', ').map(p => p.trim()).filter(p => p !== '');
+                            const existingIndex = parts.findIndex(p => p === newValue);
+
+                            if (existingIndex > -1) {
+                                parts.splice(existingIndex, 1);
+                                subOption.classList.remove('selected');
+                            } else {
+                                parts.push(newValue);
+                                subOption.classList.add('selected');
+                            }
+
+                            textInput.value = parts.join(', ');
+                            saveState();
+                        };
+                        subOptionsContainer.appendChild(subOption);
+                    });
+                };
+                chipsContainer.appendChild(chip);
+            });
+
+            return {
+                chipsContainer,
+                subOptionsContainer
+            };
+        }
+
+        function createQuestionElement(q, idx) {
+            const div = document.createElement("div");
+            div.className = "question";
+
+            const label = document.createElement("p");
+            label.textContent = `${idx + 1}. ${q.text}`;
+            div.appendChild(label);
+
+            let textInput;
+            // Kiểm tra tên biến của câu hỏi 4 và 6
+            if (q.var === "noi_dung_chinh" || q.var === "ranh_gioi") {
+                textInput = document.createElement("textarea");
+                textInput.rows = 4; // Tùy chỉnh chiều cao mặc định
+                textInput.name = q.var;
+                textInput.placeholder = "Nhập hoặc chọn gợi ý bên dưới...";
+            } else {
+                // Giữ nguyên input cho các câu hỏi còn lại
+                textInput = document.createElement("input");
+                textInput.type = "text";
+                textInput.name = q.var;
+                textInput.placeholder = "Nhập hoặc chọn gợi ý bên dưới...";
+            }
+
+            div.appendChild(textInput);
+
+            if (q.type === "text_with_suggestions" && Array.isArray(q.dropdownOptions)) {
+                div.appendChild(createDatalist(q, textInput));
+            } else if (q.type === "text_with_suggestion_chips" && Array.isArray(q.suggestionChips)) {
+                const chipsElements = createSuggestionChips(q, textInput);
+                div.appendChild(chipsElements.chipsContainer);
+                div.appendChild(chipsElements.subOptionsContainer);
+            }
+
+            textInput.addEventListener('input', saveState);
+            return div;
+        }
+
+        function saveState() {
+            const bai = document.getElementById("selectBai").value;
+            const form = document.getElementById("formQuestions");
+            const formData = new FormData(form);
+            const answers = {};
+
+            for (let [key, value] of formData.entries()) {
+                if (value.trim()) {
+                    answers[key] = value.trim();
+                }
+            }
+
+            const state = {
+                selectedBai: bai,
+                answers: answers
+            };
+
+            localStorage.setItem('storyPromptState', JSON.stringify(state));
+        }
+
+        function loadState() {
+            const savedState = localStorage.getItem('storyPromptState');
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                const selectBaiElement = document.getElementById("selectBai");
+                selectBaiElement.value = state.selectedBai;
+                if (state.selectedBai && questionsData[state.selectedBai]) {
+                    const questionsContainer = document.getElementById("questions");
+                    const form = document.getElementById("formQuestions");
+                    form.innerHTML = "";
+                    questionsData[state.selectedBai].questions.forEach((q, idx) => {
+                        const questionEl = createQuestionElement(q, idx);
+                        form.appendChild(questionEl);
+                    });
+                    questionsContainer.style.display = 'block';
+                    questionsContainer.classList.add("visible");
+                    setTimeout(() => {
+                        for (const key in state.answers) {
+                            const inputElement = document.querySelector(`[name="${key}"]`);
+                            if (inputElement) {
+                                inputElement.value = state.answers[key];
+
+                                const questionDiv = inputElement.closest('.question');
+                                if (questionDiv && inputElement.value) {
+                                    const selectedChips = inputElement.value.split(', ').map(p => p.trim());
+                                    const subOptionChips = questionDiv.querySelectorAll('.sub-option-chip');
+                                    subOptionChips.forEach(chip => {
+                                        const parentChip = chip.closest('.question').querySelector('.suggestion-chip.active');
+                                        const chipText = `${parentChip ? parentChip.textContent : chip.closest('.sub-options-container').previousElementSibling.querySelector('.suggestion-chip').textContent}: ${chip.textContent}`;
+                                        if (selectedChips.includes(chipText)) {
+                                            chip.classList.add('selected');
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }, 100);
+                }
+            }
+        }
+
+        document.getElementById("selectBai").addEventListener("change", function() {
+            const bai = this.value;
+            const questionsContainer = document.getElementById("questions");
+            const form = document.getElementById("formQuestions");
+            form.innerHTML = "";
+            document.getElementById("result").classList.remove("visible");
+            document.getElementById("imageResult").innerHTML = "";
+            localStorage.removeItem('storyPromptState');
+
+            if (questionsData[bai]) {
+                questionsContainer.style.display = 'block';
+                questionsContainer.classList.add("visible");
+                questionsData[bai].questions.forEach((q, idx) => {
+                    const questionEl = createQuestionElement(q, idx);
+                    form.appendChild(questionEl);
+                });
+            } else {
+                questionsContainer.classList.remove("visible");
+                setTimeout(() => {
+                    questionsContainer.style.display = 'none';
+                }, 500);
+            }
+            saveState();
+        });
+
+        function submitAnswers() {
+            const form = document.getElementById("formQuestions");
+            const formData = new FormData(form);
+            const answers = {};
+            const selectBaiElement = document.getElementById("selectBai");
+            const tenBai = selectBaiElement.options[selectBaiElement.selectedIndex].text;
+            const bai = selectBaiElement.value;
+            const currentBaiData = questionsData[bai];
+
+            for (let [key, value] of formData.entries()) {
+                let finalValue = value.trim();
+                if (finalValue) {
+                    const question = currentBaiData.questions.find(q => q.var === key);
+                    if (question) {
+                        answers[question.text] = finalValue;
+                    }
+                }
+            }
+
+            const outputEl = document.getElementById("output");
+            if (Object.keys(answers).length === 0) {
+                outputEl.textContent = "Vui lòng chọn ít nhất một tùy chọn hoặc nhập thông tin để tạo prompt.";
+            } else {
+                let prompt = "";
+                if (currentBaiData.imagePrompt && currentBaiData.imagePrompt.trim()) {
+                    prompt += `Dựa vào ảnh, [${currentBaiData.imagePrompt}] `;
+                }
+                prompt += `Tạo một hình minh họa cho bài "${tenBai}" với các yếu tố sau:\n\n`;
+                for (const [key, value] of Object.entries(answers)) {
+                    prompt += `- ${key}: ${value}\n`;
+                }
+                outputEl.textContent = prompt.trim();
+            }
+
+            const resultContainer = document.getElementById("result");
+            resultContainer.classList.add("visible");
+            resultContainer.scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+
+        function copyToClipboard() {
+            const outputText = document.getElementById("output").textContent;
+            const copyButton = document.getElementById("copyButton");
+
+            navigator.clipboard.writeText(outputText).then(() => {
+                const originalText = copyButton.innerHTML;
+                copyButton.innerHTML = `<i class="fas fa-check"></i> Đã sao chép!`;
+                copyButton.classList.add("copied");
+                setTimeout(() => {
+                    copyButton.innerHTML = originalText;
+                    copyButton.classList.remove("copied");
+                }, 2000);
+            }).catch(err => {
+                console.error('Lỗi khi sao chép: ', err);
+                alert("Sao chép thất bại!");
+            });
+        }
+
+        async function generateImage() {
+            const outputEl = document.getElementById("output");
+            const promptText = outputEl.textContent.trim();
+
+            if (!promptText) {
+                alert("Vui lòng tạo prompt trước khi sinh ảnh!");
+                return;
+            }
+
+            const imageResultDiv = document.getElementById("imageResult");
+            imageResultDiv.innerHTML = `<p style="text-align: center; color: var(--secondary-color); font-weight: 500;"><i class="fas fa-spinner fa-spin"></i> Đang sinh ảnh...</p>`;
+
+            try {
+                const response = await fetch(IMAGE_GENERATION_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: promptText
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Lỗi từ API: ${response.status} - ${errorData.message || response.statusText}`);
+                }
+
+                const data = await response.json();
+                const imageUrl = data.image_url;
+
+                if (imageUrl) {
+                    imageResultDiv.innerHTML = `
+                        <h3><i class="fas fa-image"></i> Hình ảnh minh họa:</h3>
+                        <img src="${imageUrl}" alt="Generated image" style="max-width: 100%; border-radius: 10px; margin-top: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    `;
+                } else {
+                    imageResultDiv.innerHTML = `<p style="color: var(--accent-color); text-align: center;">Không nhận được URL ảnh từ API.</p>`;
+                }
+
+            } catch (error) {
+                console.error('Lỗi sinh ảnh:', error);
+                imageResultDiv.innerHTML = `<p style="color: var(--accent-color); text-align: center;"><i class="fas fa-exclamation-triangle"></i> Đã xảy ra lỗi khi sinh ảnh: ${error.message}. Vui lòng kiểm tra console hoặc thử lại.</p>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadState);
+    </script>
+</body>
+
+</html>
