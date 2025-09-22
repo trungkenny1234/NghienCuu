@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Tạo Prompt Minh Họa Văn Học</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            font-size: 18px;
+        }
+        
+        .lesson-selection {
+            margin-bottom: 30px;
+        }
+        
+        .dropdown {
+            position: relative;
+            width: 100%;
+        }
+        
+        .dropdown-select {
+            padding: 15px;
+            background-color: white;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+        
+        .dropdown-select:hover {
+            border-color: #2980b9;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            width: 100%;
+            max-height: 215px; /* Chỉ hiển thị 5 mục, các mục khác sẽ cuộn */
+            overflow-y: auto;
+            border: 2px solid #3498db;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+        
+        .dropdown-content.show {
+            display: block;
+        }
+        
+        .dropdown-option {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f1f1;
+            transition: background-color 0.2s;
+        }
+        
+        .dropdown-option:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-option:hover {
+            background-color: #f5f7fa;
+        }
+        
+        .questions-container {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .question {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #3498db;
+        }
+        
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        
+        .fill-in-blank {
+            margin-bottom: 20px;
+        }
+        
+        .blank-section {
+            margin-bottom: 15px;
+        }
+        
+        .blank-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        
+        .combo-input {
+            position: relative;
+            width: 100%;
+        }
+        
+        .text-input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            min-height: 46px;
+            resize: horizontal;
+        }
+        
+        .text-input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        
+        .combo-dropdown-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #7f8c8d;
+            font-size: 18px;
+        }
+        
+        .combo-dropdown {
+            display: none;
+            position: absolute;
+            background-color: white;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 2px solid #3498db;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            top: 100%;
+            left: 0;
+        }
+        
+        .combo-dropdown.show {
+            display: block;
+        }
+        
+        .combo-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f1f1;
+            display: flex;
+            align-items: center;
+        }
+        
+        .combo-option:hover {
+            background-color: #f5f7fa;
+        }
+        
+        .combo-option input {
+            margin-right: 10px;
+        }
+        
+        .selected-options {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .selected-option {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .selected-option .remove {
+            margin-left: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #27ae60, #219653);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(39, 174, 96, 0.4);
+        }
+        
+        .result-container {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .result-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .result-title i {
+            margin-right: 10px;
+            color: #3498db;
+        }
+        
+        .prompt-result {
+            white-space: pre-wrap;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #eaeaea;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.8;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+        }
+        
+        .back-btn {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 28px;
+            }
+            
+            .description {
+                font-size: 16px;
+            }
+            
+            .dropdown-select {
+                font-size: 16px;
+                padding: 12px;
+            }
+            
+            .question-text {
+                font-size: 16px;
+            }
+            
+            .text-input {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>HỆ THỐNG TẠO PROMPT MINH HỌA VĂN HỌC</h1>
+            <p class="description">Chọn bài học và trả lời các câu hỏi để tạo prompt minh họa phù hợp</p>
+        </header>
+        
+        <div class="lesson-selection">
+            <div class="dropdown">
+                <div class="dropdown-select" id="lessonDropdown">
+                    <span>Chọn bài học</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="dropdown-content" id="lessonOptions">
+                    <div class="dropdown-option" data-lesson="1">Bài học đường đời đầu tiên</div>
+                    <div class="dropdown-option" data-lesson="2">Nếu cậu có một người bạn</div>
+                    <div class="dropdown-option" data-lesson="3">Bắt nạt</div>
+                    <div class="dropdown-option" data-lesson="4">Câu chuyện cổ tích về loài người</div>
+                    <div class="dropdown-option" data-lesson="5">Mây và Sóng</div>
+                    <div class="dropdown-option" data-lesson="6">Bức tranh của em gái tôi</div>
+                    <div class="dropdown-option" data-lesson="7">Cô bé bán diêm</div>
+                    <div class="dropdown-option" data-lesson="8">Gió lạnh đầu mùa</div>
+                    <div class="dropdown-option" data-lesson="9">Con chào mào</div>
+                    <div class="dropdown-option" data-lesson="10">Chùm ca dao về quê hương, đất nước</div>
+                    <div class="dropdown-option" data-lesson="11">Chuyện cổ tích nước mình</div>
+                    <div class="dropdown-option" data-lesson="12">Cây tre Việt Nam</div>
+                    <div class="dropdown-option" data-lesson="13">Cô Tô</div>
+                    <div class="dropdown-option" data-lesson="14">Hang Én</div>
+                    <div class="dropdown-option" data-lesson="15">Cử Long Giang ta ơi</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="questions-container" id="questionsContainer">
+            <h2 id="lessonTitle"></h2>
+            <div id="questionsList"></div>
+            <button class="submit-btn" id="generatePrompt">Tạo Prompt</button>
+        </div>
+        
+        <div class="result-container" id="resultContainer">
+            <div class="result-title"><i class="fas fa-file-alt"></i> Prompt hoàn chỉnh:</div>
+            <div class="prompt-result" id="promptResult"></div>
+            <button class="back-btn" id="backToQuestions">Quay lại chỉnh sửa</button>
+        </div>
+    </div>
+
+    <script>
+        // Dữ liệu câu hỏi cho các bài học
+        const lessonData = {
+            1: {
+                title: "Bài học đường đời đầu tiên",
+                questions: [
+                    {
+                        text: "Câu hỏi 1: Bạn là ai?",
+                        key: "vai_tro",
+                        options: [
+                            "Họa sĩ minh họa sách giáo khoa",
+                            "Họa sĩ truyện tranh thiếu nhi",
+                            "Nhà thiết kế đồ họa giáo dục",
+                            "Nhiếp ảnh gia khoa học",
+                            "Nghệ sĩ 3D minh họa",
+                            "Họa sĩ truyện cổ tích",
+                            "Khác"
+                        ]
+                    },
+                    {
+                        text: "Câu hỏi 2: Bạn muốn làm gì?",
+                        key: "muc_tieu",
+                        options: [
+                            "Minh họa sự kiêu căng, ngạo mạn của Dế Mèn",
+                            "Nhấn mạnh sự đối lập số phận giữa Dế Mèn và Dế Choắt",
+                            "Khắc họa bi kịch và bài học ân hận của Dế Mèn",
+                            "Khác"
+                        ]
+                    },
+                    {
+                        text: "Câu hỏi 3: Bạn muốn tạo ảnh dành cho ai?",
+                        key: "doi_tuong",
+                        options: [
+                            "Học sinh mầm non",
+                            "Học sinh Tiểu học (lớp 1 - 5)",
+                            "Học sinh THCS (lớp 6 - 9)",
+                            "Học sinh THPT (lớp 10 - 12)",
+                            "Sinh viên/người lớn",
+                            "Khác"
+                        ]
+                    },
+                    {
+                        text: "Nội dung chính",
+                        key: "noi_dung_chinh",
+                        sections: [
+                            {
+                                title: "Nhân vật chính",
+                                key: "nhan_vat_chinh",
+                                options: ["Dế Mèn", "Dế Choắt"]
+                            },
+                            {
+                                title: "Hành động",
+                                key: "hanh_dong",
+                                options: [
+                                    "Đứng hiên ngang, cười chế giễu",
+                                    "Ngồi cúi đầu, trầm ngâm bên hang",
+                                    "Bị Chim Cốc quắp, giãy giụa"
+                                ]
+                            },
+                            {
+                                title: "Biểu cảm",
+                                key: "bieu_cam",
+                                options: [
+                                    "Cười chế giễu",
+                                    "Lo sợ, hoảng hốt",
+                                    "Buồn bã, ân hận",
+                                    "Bỡ ngỡ, tò mò"
+                                ]
+                            },
+                            {
+                                title: "Nhân vật phụ",
+                                key: "nhan_vat_phu",
+                                options: ["Cào Cào", "Gọng Vó", "Chim Cốc"]
+                            },
+                            {
+                                title: "Bối cảnh",
+                                key: "boi_canh",
+                                options: [
+                                    "Đồng cỏ xanh, bãi đất, miệng hang đất",
+                                    "Hang tối nhỏ bé đối lập với ngoài trời sáng"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        text: "Câu hỏi 5: Phong cách minh họa",
+                        key: "phong_cach",
+                        options: [
+                            "Truyện tranh thiếu nhi",
+                            "Minh họa sách giáo khoa",
+                            "Màu nước dịu nhẹ",
+                            "Kỹ thuật số hiện đại",
+                            "Tranh cổ tích/dân gian",
+                            "Hiện thực khoa học",
+                            "3D hoạt hình",
+                            "Khác"
+                        ]
+                    },
+                    {
+                        text: "Ranh giới",
+                        key: "ranh_gioi",
+                        sections: [
+                            {
+                                title: "Góc nhìn",
+                                key: "goc_nhin",
+                                options: [
+                                    "Toàn cảnh (wide shot) cho thấy không gian rộng, nhiều chi tiết.",
+                                    "Trung cảnh (medium shot) giúp cân bằng nhân vật và bối cảnh.",
+                                    "Cận cảnh (close-up) để nhấn mạnh biểu cảm gương mặt.",
+                                    "Góc nhìn từ trên cao tạo cảm giác nhỏ bé, bị áp chế.",
+                                    "Góc nhìn từ dưới lên để tôn dáng, làm nhân vật oai vệ."
+                                ]
+                            },
+                            {
+                                title: "Chi tiết bắt buộc",
+                                key: "chi_tiet_bat_buoc",
+                                options: [
+                                    "Nét mặt Dế Mèn cười chế giễu (mắt nheo, miệng cong cười mỉa).",
+                                    "Dáng đứng Dế Mèn hiên ngang, ưỡn ngực, hai râu vểnh cao.",
+                                    "Cào Cào, Gọng Vó lùi lại, nép mình sợ hãi (mắt mở to, tay chân co lại).",
+                                    "Dế Choắt trong hang nhỏ tối, dáng yếu ớt, gầy còm.",
+                                    "Dế Mèn ngoài trời sáng, dáng mạnh mẽ, oai vệ.",
+                                    "Nhấn sự tương phản ánh sáng: trong tối – ngoài sáng",
+                                    "Chim Cốc quắp Dế Choắt bằng mỏ.",
+                                    "Dế Choắt giãy giụa, miệng há to kêu cứu, mắt hoảng loạn.",
+                                    "Cánh Chim Cốc xoải mạnh, ánh mắt sắc lạnh, tập trung",
+                                    "Dế Mèn ngồi cúi đầu, râu rủ xuống.",
+                                    "Hang đất trống, không còn Dế Choắt.",
+                                    "Không gian tĩnt lặng, cỏ xanh hiu quạnh"
+                                ]
+                            },
+                            {
+                                title: "Điều cần tránh",
+                                key: "dieu_can_tranh",
+                                options: [
+                                    "Logo/chữ thừa",
+                                    "Hình ảnh bạo lực quá mức",
+                                    "Màu quá gắt, gây chói",
+                                    "Quá nhiều chi tiết phức tạp làm rối tranh",
+                                    "Khác"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            2: {
+                title: "Nếu cậu có một người bạn",
+                questions: [
+                    {
+                        text: "Câu hỏi 1: Bạn là ai?",
+                        key: "vai_tro",
+                        options: [
+                            "Họa sĩ minh họa sách giáo khoa",
+                            "Họa sĩ truyện tranh thiếu nhi",
+                            "Nhà thiết kế đồ họa giáo dục",
+                            "Nhiếp ảnh gia khoa học",
+                            "Nghệ sĩ 3D minh họa",
+                            "Họa sĩ truyện cổ tích",
+                            "Khác"
+                        ]
+                    },
+                    {
+                        text: "Câu hỏi 2: Bạn muốn làm gì?",
+                        key: "muc_tieu",
+                        options: [
+                            "Minh họa sự cô đơn ban đầu của hoàng tử bé",
+                            "Nhấn mạnh ý nghĩa tình bạn qua gặp gỡ và chia tay với Cáo",
+                            "Khác"
+                        ]
+                    },
+                    {
+                        text: "Câu hỏi 3: Bạn muốn tạo ảnh dành cho ai?",
+                        key: "doi_tuong",
+                        options: [
+                            "Học sinh mầm non",
+                            "Học sinh Tiểu học (lớp 1 - 5)",
+                            "Học sinh THCS (lớp 6 - 9)",
+                            "Học sinh THPT (lớp 10 - 12)",
+                            "Sinh viên/người lớn",
+                            "Khác"
+                        ]
+                    },
+                    {
+                        text: "Nội dung chính",
+                        key: "noi_dung_chinh",
+                        sections: [
+                            {
+                                title: "Nhân vật chính",
+                                key: "nhan_vat_chinh",
+                                options: ["Hoàng tử bé", "Cáo"]
+                            },
+                            {
+                                title: "Hành động",
+                                key: "hanh_dong",
+                                options: ["Gặp gỡ lần đầu với Cáo", "Trò chuyện, làm quen", "Ôm chia tay"]
+                            },
+                            {
+                                title: "Biểu cảm",
+                                key: "bieu_cam",
+                                options: ["Cô đơn", "Lưu luyến, xúc động"]
+                            },
+                            {
+                                title: "Nhân vật phụ",
+                                key: "nhan_vat_phu",
+                                options: ["Cáo"]
+                            },
+                            {
+                                title: "Bối cảnh",
+                                key: "boi_canh",
+                                options: ["Sa mạc rộng lớn, trống trải", "Hoàng hôn trên nền cát vàng"]
+                            }
+                        ]
+                    },
+                    {
+                        text: "Câu hỏi 5: Phong cách minh họa",
+                        key: "phong_cach",
+                        options: [
+                            "Truyện tranh thiếu nhi",
+                            "Minh họa sách giáo khoa",
+                            "Màu nước dịu nhẹ",
+                            "Kỹ thuật số hiện đại",
+                            "Tranh cổ tích/dân gian",
+                            "Hiện thực khoa học",
+                            "3D hoạt hình",
+                            "Khác"
+                        ]
+                    },
+                    {
+                        text: "Ranh giới",
+                        key: "ranh_gioi",
+                        sections: [
+                            {
+                                title: "Góc nhìn",
+                                key: "goc_nhin",
+                                options: [
+                                    "Toàn cảnh (wide shot) cho thấy không gian rộng, nhiều chi tiết.",
+                                    "Trung cảnh (medium shot) giúp cân bằng nhân vật và bối cảnh.",
+                                    "Cận cảnh (close-up) để nhấn mạnh biểu cảm gương mặt.",
+                                    "Góc nhìn từ trên cao tạo cảm giác nhỏ bé, bị áp chế.",
+                                    "Góc nhìn từ dưới lên để tôn dáng, làm nhân vật oai vệ."
+                                ]
+                            },
+                            {
+                                title: "Chi tiết bắt buộc",
+                                key: "chi_tiet_bat_buoc",
+                                options: [
+                                    "Hoàng tử bé nhỏ bé, dáng bỡ ngỡ, ánh mắt tò mò.",
+                                    "Cáo đứng đối diện, giữ khoảng cách, ánh mắt cảnh giác.",
+                                    "Hoàng tử bé ôm Cáo, gương mặt xúc động."
+                                ]
+                            },
+                            {
+                                title: "Điều cần tránh",
+                                key: "dieu_can_tranh",
+                                options: [
+                                    "Logo/chữ thừa",
+                                    "Hình ảnh bạo lực quá mức",
+                                    "Màu quá gắt, gây chói",
+                                    "Quá nhiều chi tiết phức tạp làm rối tranh",
+                                    "Khác"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            3: {
+                title: "Bắt nạt",
+                questions: [
+                    {
+                        text: "Câu hỏi 1: Bạn là ai?",
+                        key: "vai_tro",
+                        options: [
+                            "Họa sĩ minh họa sách giáo khoa",
+                            "Họa sĩ truyện tranh thiếu nhi",
+                            "Nhà thiết kế đồ họa giáo dục",
+                            "Nhiếp ảnh gia khoa học",
+                            "Nghệ sĩ 3D minh họa",
+                            "Họa sĩ truyện cổ tích",
+                            "Khác"
+                        ]
+                    },
+                    {
+                        text: "Câu hỏi 2: Bạn muốn làm gì?",
+                        key: "muc_tieu",
+                        options: [
+                            "Minh họa nỗi sợ hãi của bạn bị bắt nạt",
+                            "Minh họa thông điệp không bắt nạt, sống nhân ái",
+                            "Khác"
+                        ]
+                    },
+                    {
+                        text: "Câu hỏi 3: Bạn muốn tạo ảnh dành cho ai?",
+                        key: "doi_tuong",
+                        options: [
+                            "Học sinh mầm non",
+                            "Học sinh Tiểu học (lớp 1 - 5)",
+                            "Học sinh THCS (lớp 6 - 9)",
+                            "Học sinh THPT (lớp 10 - 12)",
+                            "Sinh viên/người lớn",
+                            "Khác"
+                        ]
+                    },
+                    {
+                        text: "Nội dung chính",
+                        key: "noi_dung_chinh",
+                        sections: [
+                            {
+                                title: "Nhân vật chính",
+                                key: "nhan_vat_chinh",
+                                options: ["Bạn nhỏ bị bắt nạt", "Nhân vật học sinh"]
+                            },
+                            {
+                                title: "Hành động",
+                                key: "hanh_dong",
+                                options: ["Bị xô đẩy, chọc ghẹo", "Ngồi co ro, nép mình", "Được bạn đưa tay nâng đỡ, an ủi"]
+                            },
+                            {
+                                title: "Biểu cảm",
+                                key: "bieu_cam",
+                                options: ["Cảm thông, an ủi", "Tức giận, bất bình"]
+                            },
+                            {
+                                title: "Nhân vật phụ",
+                                key: "nhan_vat_phu",
+                                options: ["Nhóm bạn bắt nạt", "Nhóm bạn bảo vệ"]
+                            },
+                            {
+                                title: "Bối cảnh",
+                                key: "boi_canh",
+                                options: ["Trong lớp học (bàn ghế, bảng)", "Sân trường (cây, ghế đá)", "Góc sinh hoạt đời sống hằng ngày"]
+                            }
+                        ]
+                    },
+                    {
+                        text: "Câu hỏi 5: Phong cách minh họa",
+                        key: "phong_cach",
+                        options: [
+                            "Truyện tranh thiếu nhi",
+                            "Minh họa sách giáo khoa",
+                            "Màu nước dịu nhẹ",
+                            "Kỹ thuật số hiện đại",
+                            "Tranh cổ tích/dân gian",
+                            "Hiện thực khoa học",
+                            "3D hoạt hình",
+                            "Khác"
+                        ]
+                    },
+                    {
+                        text: "Ranh giới",
+                        key: "ranh_gioi",
+                        sections: [
+                            {
+                                title: "Góc nhìn",
+                                key: "goc_nhin",
+                                options: [
+                                    "Toàn cảnh (wide shot) cho thấy không gian rộng, nhiều chi tiết.",
+                                    "Trung cảnh (medium shot) giúp cân bằng nhân vật và bối cảnh.",
+                                    "Cận cảnh (close-up) để nhấn mạnh biểu cảm gương mặt.",
+                                    "Góc nhìn từ trên cao tạo cảm giác nhỏ bé, bị áp chế.",
+                                    "Góc nhìn từ dưới lên để tôn dáng, làm nhân vật oai vệ."
+                                ]
+                            },
+                            {
+                                title: "Chi tiết bắt buộc",
+                                key: "chi_tiet_bat_buoc",
+                                options: [
+                                    "Nhân vật nhỏ bé, co người, tay che mặt.",
+                                    "Nét mặt sợ hãi, buồn rầu, mắt rưng rưng.",
+                                    "Nhóm bạn xung quanh cười giễu, hoặc đe doạ.",
+                                    "Một hoặc nhiều bạn đưa tay ra nâng đỡ.",
+                                    "Nét mặt thể hiện sự cảm thông, quan tâm.",
+                                    "Kẻ bắt nạt bị đẩy lùi hoặc đứng ngoài lề.",
+                                    "Thông điệp đoàn kết – nhân ái hiện rõ qua hành động nhóm."
+                                ]
+                            },
+                            {
+                                title: "Điều cần tránh",
+                                key: "dieu_can_tranh",
+                                options: [
+                                    "Logo/chữ thừa",
+                                    "Hình ảnh bạo lực quá mức",
+                                    "Màu quá gắt, gây chói",
+                                    "Quá nhiều chi tiết phức tạp làm rối tranh",
+                                    "Khác"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // Biến toàn cục
+        let currentLesson = null;
+        const lessonDropdown = document.getElementById('lessonDropdown');
+        const lessonOptions = document.getElementById('lessonOptions');
+        const questionsContainer = document.getElementById('questionsContainer');
+        const lessonTitle = document.getElementById('lessonTitle');
+        const questionsList = document.getElementById('questionsList');
+        const resultContainer = document.getElementById('resultContainer');
+        const promptResult = document.getElementById('promptResult');
+        const generatePromptBtn = document.getElementById('generatePrompt');
+        const backToQuestionsBtn = document.getElementById('backToQuestions');
+
+        // Xử lý sự kiện khi chọn bài học
+        lessonDropdown.addEventListener('click', () => {
+            lessonOptions.classList.toggle('show');
+        });
+
+        document.querySelectorAll('.dropdown-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const lessonId = option.getAttribute('data-lesson');
+                currentLesson = lessonId;
+                
+                // Cập nhật giao diện
+                lessonDropdown.querySelector('span').textContent = option.textContent;
+                lessonOptions.classList.remove('show');
+                
+                // Hiển thị câu hỏi
+                showQuestions(lessonId);
+            });
+        });
+
+        // Đóng dropdown khi click ra ngoài
+        document.addEventListener('click', (e) => {
+            if (!lessonDropdown.contains(e.target)) {
+                lessonOptions.classList.remove('show');
+            }
+        });
+
+        // Hiển thị câu hỏi cho bài học được chọn
+        function showQuestions(lessonId) {
+            if (!lessonData[lessonId]) {
+                alert('Bài học này chưa có dữ liệu. Vui lòng chọn bài khác.');
+                return;
+            }
+            
+            const lesson = lessonData[lessonId];
+            lessonTitle.textContent = lesson.title;
+            questionsList.innerHTML = '';
+            
+            // Tạo các câu hỏi
+            lesson.questions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                
+                if (question.sections) {
+                    // Xử lý câu hỏi có sections (điền khuyết)
+                    questionDiv.innerHTML = `
+                        <div class="question-text">${question.text}</div>
+                        <div class="fill-in-blank" data-key="${question.key}">
+                            ${question.sections.map(section => `
+                                <div class="blank-section" data-key="${section.key}">
+                                    <div class="blank-title">${section.title}:</div>
+                                    <div class="combo-input">
+                                        <input type="text" class="text-input" placeholder="Nhập nội dung hoặc chọn từ danh sách" data-key="${section.key}">
+                                        <button class="combo-dropdown-btn" data-key="${section.key}">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </button>
+                                        <div class="combo-dropdown" data-key="${section.key}">
+                                            ${section.options.map(option => `
+                                                <label class="combo-option">
+                                                    <input type="checkbox" value="${option}" data-key="${section.key}">
+                                                    ${option}
+                                                </label>
+                                            `).join('')}
+                                        </div>
+                                        <div class="selected-options" data-key="${section.key}"></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    // Xử lý câu hỏi thông thường
+                    questionDiv.innerHTML = `
+                        <div class="question-text">${question.text}</div>
+                        <div class="combo-input">
+                            <input type="text" class="text-input" placeholder="Nhập nội dung hoặc chọn từ danh sách" data-key="${question.key}">
+                            <button class="combo-dropdown-btn" data-key="${question.key}">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="combo-dropdown" data-key="${question.key}">
+                                ${question.options.map(option => `
+                                    <label class="combo-option">
+                                        <input type="checkbox" value="${option}" data-key="${question.key}">
+                                        ${option}
+                                    </label>
+                                `).join('')}
+                            </div>
+                            <div class="selected-options" data-key="${question.key}"></div>
+                        </div>
+                    `;
+                }
+                
+                questionsList.appendChild(questionDiv);
+            });
+            
+            // Hiển thị container câu hỏi
+            questionsContainer.style.display = 'block';
+            resultContainer.style.display = 'none';
+            
+            // Khởi tạo combo dropdown
+            initComboDropdowns();
+            
+            // Thiết lập sự kiện cho các ô nhập
+            setupTextInputs();
+        }
+
+        // Khởi tạo combo dropdown
+        function initComboDropdowns() {
+            // Xử lý mở/đóng combo dropdown
+            document.querySelectorAll('.combo-dropdown-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const key = e.currentTarget.getAttribute('data-key');
+                    const dropdown = document.querySelector(`.combo-dropdown[data-key="${key}"]`);
+                    
+                    // Đóng tất cả dropdown khác
+                    document.querySelectorAll('.combo-dropdown').forEach(dd => {
+                        if (dd !== dropdown) {
+                            dd.classList.remove('show');
+                        }
+                    });
+                    
+                    // Mở/đóng dropdown hiện tại
+                    dropdown.classList.toggle('show');
+                    
+                    // Ngăn sự kiện lan ra ngoài
+                    e.stopPropagation();
+                });
+            });
+            
+            // Xử lý chọn option
+            document.querySelectorAll('.combo-option input').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const key = e.target.getAttribute('data-key');
+                    updateSelectedOptions(key);
+                });
+            });
+            
+            // Đóng dropdown khi click ra ngoài
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.combo-input')) {
+                    document.querySelectorAll('.combo-dropdown').forEach(dropdown => {
+                        dropdown.classList.remove('show');
+                    });
+                }
+            });
+            
+            // Cập nhật selected options khi nhập text
+            document.querySelectorAll('.text-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const key = e.target.getAttribute('data-key');
+                    updateSelectedOptions(key);
+                });
+            });
+        }
+
+        // Thiết lập sự kiện cho các ô nhập
+        function setupTextInputs() {
+            document.querySelectorAll('.text-input').forEach(input => {
+                // Tự động mở rộng chiều rộng theo nội dung
+                input.addEventListener('input', function() {
+                    this.style.width = 'auto';
+                    this.style.width = (this.scrollWidth) + 'px';
+                });
+                
+                // Kích hoạt sự kiện input lần đầu để thiết lập chiều rộng ban đầu
+                setTimeout(() => {
+                    input.dispatchEvent(new Event('input'));
+                }, 0);
+            });
+        }
+
+        // Cập nhật các option đã chọn
+        function updateSelectedOptions(key) {
+            const selectedContainer = document.querySelector(`.selected-options[data-key="${key}"]`);
+            const textInput = document.querySelector(`.text-input[data-key="${key}"]`);
+            const checkboxes = document.querySelectorAll(`.combo-option input[data-key="${key}"]:checked`);
+            
+            selectedContainer.innerHTML = '';
+            
+            // Thêm text input nếu có
+            if (textInput.value) {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'selected-option';
+                optionElement.innerHTML = `
+                    ${textInput.value}
+                    <span class="remove" data-type="text" data-key="${key}">×</span>
+                `;
+                
+                // Xử lý xóa text
+                optionElement.querySelector('.remove').addEventListener('click', () => {
+                    textInput.value = '';
+                    updateSelectedOptions(key);
+                });
+                
+                selectedContainer.appendChild(optionElement);
+            }
+            
+            // Thêm các option đã chọn
+            checkboxes.forEach(checkbox => {
+                const optionValue = checkbox.value;
+                const optionElement = document.createElement('div');
+                optionElement.className = 'selected-option';
+                optionElement.innerHTML = `
+                    ${optionValue}
+                    <span class="remove" data-value="${optionValue}" data-key="${key}">×</span>
+                `;
+                
+                // Xử lý xóa option
+                optionElement.querySelector('.remove').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    checkbox.checked = false;
+                    updateSelectedOptions(key);
+                });
+                
+                selectedContainer.appendChild(optionElement);
+            });
+        }
+
+        // Xử lý tạo prompt
+        generatePromptBtn.addEventListener('click', () => {
+            if (!currentLesson) {
+                alert('Vui lòng chọn một bài học trước.');
+                return;
+            }
+            
+            const lesson = lessonData[currentLesson];
+            const answers = {};
+            
+            // Thu thập dữ liệu từ các câu trả lời
+            lesson.questions.forEach(question => {
+                if (question.sections) {
+                    // Xử lý câu hỏi có sections
+                    question.sections.forEach(section => {
+                        const key = section.key;
+                        const textInput = document.querySelector(`.text-input[data-key="${key}"]`);
+                        const checkboxes = document.querySelectorAll(`.combo-option input[data-key="${key}"]:checked`);
+                        
+                        // Kết hợp text input và các option đã chọn
+                        let answerParts = [];
+                        if (textInput.value) answerParts.push(textInput.value);
+                        
+                        checkboxes.forEach(checkbox => {
+                            answerParts.push(checkbox.value);
+                        });
+                        
+                        answers[key] = answerParts;
+                    });
+                } else {
+                    // Xử lý câu hỏi thông thường
+                    const key = question.key;
+                    const textInput = document.querySelector(`.text-input[data-key="${key}"]`);
+                    const checkboxes = document.querySelectorAll(`.combo-option input[data-key="${key}"]:checked`);
+                    
+                    // Kết hợp text input và các option đã chọn
+                    let answerParts = [];
+                    if (textInput.value) answerParts.push(textInput.value);
+                    
+                    checkboxes.forEach(checkbox => {
+                        answerParts.push(checkbox.value);
+                    });
+                    
+                    answers[key] = answerParts;
+                }
+            });
+            
+            // Tạo prompt theo cấu trúc chuẩn
+            const prompt = (
+                `Vai trò: Đóng vai ${answers['vai_tro'].join(', ')}.\n` +
+                `Mục tiêu: ${answers['muc_tieu'].join(', ')}.\n` +
+                `Đối tượng: ${answers['doi_tuong'].join(', ')}.\n` +
+                `Nội dung chính: Nhân vật chính ${answers['nhan_vat_chinh'].join(', ')}, hành động ${answers['hanh_dong'].join(', ')}, ` +
+                `biểu cảm ${answers['bieu_cam'].join(', ')}; nhân vật phụ ${answers['nhan_vat_phu'].join(', ')}; ` +
+                `bối cảnh ${answers['boi_canh'].join(', ')}.\n` +
+                `Phong cách: ${answers['phong_cach'].join(', ')}.\n` +
+                `Ranh giới: Góc nhìn ${answers['goc_nhin'].join(', ')}; chi tiết bắt buộc ${answers['chi_tiet_bat_buoc'].join(', ')}; ` +
+                `tránh ${answers['dieu_can_tranh'].join(', ')}.`
+            );
+            
+            // Hiển thị kết quả
+            promptResult.textContent = prompt;
+            questionsContainer.style.display = 'none';
+            resultContainer.style.display = 'block';
+        });
+
+        // Xử lý nút quay lại
+        backToQuestionsBtn.addEventListener('click', () => {
+            resultContainer.style.display = 'none';
+            questionsContainer.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
