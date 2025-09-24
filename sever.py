@@ -10,7 +10,7 @@ CORS(app)
 # ====================================================================================
 # BƯỚC 1: DÁN KHÓA API CỦA BẠN VÀO DÒNG DƯỚI ĐÂY
 # ====================================================================================
-api_key = "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"
+api_key = 
 
 client = OpenAI(api_key=api_key)
 
@@ -58,4 +58,5 @@ def generate_image_api():
 
 if __name__ == '__main__':
     # Chạy máy chủ trên cổng 5000, bật chế độ gỡ lỗi (debug)
+
     app.run(debug=True, port=5000)
