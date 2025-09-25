@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Tạo Prompt Minh Họa Truyện</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6b8cae;
+            --accent-color: #ff6b6b;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --success-color: #28a745;
+            --background-color: #eaf1f8;
+            --card-bg: #fff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #4a4a4a;
+            background-color: var(--background-color);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        h2 {
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .description {
+            color: #666;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .select-container,
+        .role-container {
+            margin-bottom: 30px;
+        }
+
+        select,
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 15px 18px;
+            border: none;
+            border-bottom: 2px solid var(--primary-color);
+            border-radius: 10px;
+            font-size: 16px;
+            background-color: #fcfdff;
+            color: #333;
+            transition: all 0.3s ease;
+            resize: vertical;
+            min-height: 50px;
+        }
+
+        select:focus,
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-bottom: 2px solid var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(74, 111, 165, 0.15);
+        }
+
+        #questions {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #questions.visible {
+            display: block;
+            opacity: 1;
+            margin-top: 20px;
+        }
+
+        .question {
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid var(--secondary-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .question .question-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .question .question-header p {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0;
+        }
+        
+        /* Custom Multi-select Dropdown Styles */
+        .multi-select-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .multi-select-input {
+            width: 100%;
+            min-height: 50px;
+            padding: 8px 12px;
+            border: none;
+            border-bottom: 2px solid var(--primary-color);
+            border-radius: 10px;
+            background-color: #fcfdff;
+            cursor: text; /* Change cursor */
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .multi-select-input:focus-within {
+             outline: none;
+            border-bottom: 2px solid var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(74, 111, 165, 0.15);
+        }
+        
+        .multi-select-input input {
+            border: none;
+            outline: none;
+            flex-grow: 1;
+            background-color: transparent;
+            padding: 5px;
+            font-size: 16px;
+            min-width: 150px; /* Ensure input has space */
+        }
+
+        .selected-item-tag {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .selected-item-tag .remove-tag {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .multi-select-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 5px;
+        }
+
+        .multi-select-dropdown.visible {
+            display: block;
+        }
+
+        .multi-select-dropdown-item {
+            padding: 12px 18px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .multi-select-dropdown-item:hover {
+            background-color: #f1f1f1;
+        }
+        .multi-select-dropdown-item.selected {
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: 500;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 80px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .buttons button {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .buttons button:first-child {
+            background: linear-gradient(135deg, var(--success-color) 0%, #4CAF50 100%);
+            box-shadow: 0 5px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .buttons button:first-child:hover {
+            background: linear-gradient(135deg, #4CAF50 0%, var(--success-color) 100%);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+
+        .buttons button:last-child {
+            background: linear-gradient(135deg, #2196F3 0%, var(--primary-color) 100%);
+            box-shadow: 0 5px 20px rgba(33, 150, 243, 0.3);
+        }
+
+        .buttons button:last-child:hover {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #2196F3 100%);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .buttons button {
+                width: 100%;
+                padding: 12px 20px;
+                font-size: 15px;
+            }
+        }
+
+        #result {
+            margin-top: 30px;
+            padding: 25px;
+            background-color: #e9ecef;
+            border-radius: 15px;
+            display: none;
+        }
+
+        #result.visible {
+            display: block;
+        }
+        
+        #imageResult {
+            margin-top: 30px;
+        }
+        
+        #imageResult img {
+             max-width: 100%; 
+             border-radius: 10px; 
+             margin-top: 15px; 
+             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .download-btn {
+            display: block;
+            width: fit-content;
+            margin: 20px auto 0;
+            padding: 12px 25px;
+            background-color: var(--success-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .copy-btn {
+            margin-left: 10px;
+            padding: 8px 16px;
+            background-color: var(--dark-color);
+            font-size: 14px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background-color: #495057;
+            transform: translateY(-2px);
+        }
+
+        .copy-btn.copied {
+            background-color: var(--success-color);
+        }
+
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .suggestion-chips-container {
+            display: none;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .suggestion-chips-container.visible {
+            display: flex;
+        }
+
+        .suggestion-chip,
+        .sub-option-chip {
+            padding: 10px 15px;
+            background-color: #e9f2ff;
+            border: 1px solid #c2d9ff;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .suggestion-chip:hover,
+        .sub-option-chip:hover {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        .suggestion-chip.active,
+        .sub-option-chip.selected {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .sub-options-container {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #ccc;
+            display: none;
+            flex-wrap: wrap;
+            gap: 8px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .sub-options-container.visible {
+            display: flex;
+        }
+
+        .toggle-chips-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--primary-color);
+            border-radius: 20px;
+            background-color: transparent;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .toggle-chips-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .question .question-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Hệ Thống Tạo Prompt Minh Họa Truyện</h1>
+            <p class="description">Chọn bài học và trả lời các câu hỏi để tạo prompt mô tả hình ảnh minh họa</p>
+        </header>
+
+        <div class="select-container">
+            <h2><i class="fas fa-book"></i> Chọn bài:</h2>
+            <select id="selectBai">
+                <option value="">-- Chọn bài --</option>
+                <option value="1">Bài học đường đời đầu tiên</option>
+                <option value="2">Nếu cậu có một người bạn</option>
+                <option value="3">Bắt nạt</option>
+                <option value="4">Câu chuyện cổ tích về loài người</option>
+                <option value="5">Mây và Sóng</option>
+                <option value="6">Bức tranh của em gái tôi</option>
+                <option value="7">Cô bé bán diêm</option>
+                <option value="8">Gió lạnh đầu mùa</option>
+                <option value="9">Con chào mào</option>
+                <option value="10">Chùm ca dao về quê hương, đất nước</option>
+                <option value="11">Chuyện cổ tích nước mình</option>
+                <option value="12">Cây tre Việt Nam</option>
+                <option value="13">Cô Tô</option>
+                <option value="14">Hang Én</option>
+                <option value="15">Cửu Long Giang ta ơi</option>
+            </select>
+        </div>
+
+        <div id="questions">
+            <h2><i class="fas fa-question-circle"></i> Câu hỏi minh họa:</h2>
+            <form id="formQuestions"></form>
+            <div class="buttons">
+                <button type="button" onclick="submitAnswers()">
+                    <i class="fas fa-magic"></i> Tạo Prompt
+                </button>
+                <button type="button" onclick="generateImage()">
+                    <i class="fas fa-image"></i> Sinh ảnh
+                </button>
+            </div>
+        </div>
+
+        <div id="result">
+            <div class="title-container">
+                <h3><i class="fas fa-pencil-alt"></i> Prompt hoàn chỉnh:</h3>
+                <button id="copyButton" class="copy-btn" onclick="copyToClipboard()"><i class="fas fa-copy"></i> Sao
+                    chép</button>
+            </div>
+            <pre id="output"></pre>
+        </div>
+        <div id="imageResult"></div>
+    </div>
+
+    <script>
+        // Store API key in a session to avoid asking repeatedly
+        let openAIApiKey = sessionStorage.getItem('openai_api_key');
+
+        // Dữ liệu câu hỏi
+        const questionsData = {
+            1: {
+                imagePrompt: "Dế Mèn kiêu căng đứng trước hang Dế Choắt, trời nắng gắt",
+                questions: [{
+                    var: "vai_tro",
+                    text: "Bạn là ai?",
+                    type: "multi-select",
+                    options: [
+                        "Họa sĩ minh họa sách giáo khoa",
+                        "Họa sĩ truyện tranh thiếu nhi",
+                        "Nhà thiết kế đồ họa giáo dục",
+                        "Nhiếp ảnh gia khoa học",
+                        "Nghệ sĩ 3D minh họa",
+                        "Họa sĩ truyện cổ tích"
+                    ]
+                }, {
+                    var: "muc_tieu",
+                    text: "Bạn muốn làm gì?",
+                    type: "multi-select",
+                    options: [
+                        "Minh họa sự kiêu căng, ngạo mạn của Dế Mèn",
+                        "Nhấn mạnh sự đối lập số phận giữa Dế Mèn và Dế Choắt",
+                        "Khắc họa bi kịch và bài học ân hận của Dế Mèn"
+                    ]
+                }, {
+                    var: "doi_tuong",
+                    text: "Bạn muốn tạo ảnh dành cho ai?",
+                    type: "multi-select",
+                    options: [
+                        "Học sinh mầm non",
+                        "Học sinh Tiểu học (lớp 1 - 5)",
+                        "Học sinh THCS (lớp 6 - 9)",
+                        "Học sinh THPT (lớp 10 - 12)",
+                        "Sinh viên/người lớn"
+                    ]
+                }, {
+                    var: "noi_dung_chinh",
+                    text: "Nội dung chính",
+                    type: "text_with_suggestion_chips",
+                    suggestionChips: [{
+                        title: "Nhân vật chính",
+                        key: "nhan_vat_chinh",
+                        options: ["Dế Mèn", "Dế Choắt"]
+                    }, {
+                        title: "Hành động",
+                        key: "hanh_dong",
+                        options: [
+                            "Đứng hiên ngang, cười chế giễu",
+                            "Ngồi cúi đầu, trầm ngâm bên hang",
+                            "Bị Chim Cốc quắp, giãy giụa"
+                        ]
+                    }, {
+                        title: "Biểu cảm",
+                        key: "bieu_cam",
+                        options: [
+                            "Cười chế giễu",
+                            "Lo sợ, hoảng hốt",
+                            "Buồn bã, ân hận",
+                            "Bỡ ngỡ, tò mò"
+                        ]
+                    }, {
+                        title: "Nhân vật phụ",
+                        key: "nhan_vat_phu",
+                        options: ["Cào Cào", "Gọng Vó", "Chim Cốc"]
+                    }, {
+                        title: "Bối cảnh",
+                        key: "boi_canh",
+                        options: [
+                            "Đồng cỏ xanh, bãi đất, miệng hang đất",
+                            "Hang tối nhỏ bé đối lập với ngoài trời sáng"
+                        ]
+                    }]
+                }, {
+                    var: "phong_cach",
+                    text: "Phong cách minh họa",
+                    type: "multi-select",
+                    options: [
+                        "Truyện tranh thiếu nhi",
+                        "Minh họa sách giáo khoa",
+                        "Màu nước dịu nhẹ",
+                        "Kỹ thuật số hiện đại",
+                        "Tranh cổ tích/dân gian",
+                        "Hiện thực khoa học",
+                        "3D hoạt hình"
+                    ]
+                }, {
+                    var: "ranh_gioi",
+                    text: "Ranh giới",
+                    type: "text_with_suggestion_chips",
+                    suggestionChips: [{
+                        title: "Góc nhìn",
+                        key: "goc_nhin",
+                        options: [
+                            "Toàn cảnh (wide shot) cho thấy không gian rộng, nhiều chi tiết.",
+                            "Trung cảnh (medium shot) giúp cân bằng nhân vật và bối cảnh.",
+                            "Cận cảnh (close-up) để nhấn mạnh biểu cảm gương mặt.",
+                            "Góc nhìn từ trên cao tạo cảm giác nhỏ bé, bị áp chế.",
+                            "Góc nhìn từ dưới lên để tôn dáng, làm nhân vật oai vệ."
+                        ]
+                    }, {
+                        title: "Chi tiết bắt buộc",
+                        key: "chi_tiet_bat_buoc",
+                        options: [
+                            "Nét mặt Dế Mèn cười chế giễu (mắt nheo, miệng cong cười mỉa).",
+                            "Dáng đứng Dế Mèn hiên ngang, ưỡn ngực, hai râu vểnh cao.",
+                            "Cào Cào, Gọng Vó lùi lại, nép mình sợ hãi (mắt mở to, tay chân co lại).",
+                            "Dế Choắt trong hang nhỏ tối, dáng yếu ớt, gầy còm.",
+                            "Dế Mèn ngoài trời sáng, dáng mạnh mẽ, oai vệ.",
+                            "Nhấn sự tương phản ánh sáng: trong tối – ngoài sáng",
+                            "Chim Cốc quắp Dế Choắt bằng mỏ.",
+                            "Dế Choắt giãy giụa, miệng há to kêu cứu, mắt hoảng loạn.",
+                            "Cánh Chim Cốc xoải mạnh, ánh mắt sắc lạnh, tập trung",
+                            "Dế Mèn ngồi cúi đầu, râu rủ xuống.",
+                            "Hang đất trống, không còn Dế Choắt.",
+                            "Không gian tĩnh lặng, cỏ xanh hiu quạnh"
+                        ]
+                    }, {
+                        title: "Điều cần tránh",
+                        key: "dieu_can_tranh",
+                        options: [
+                            "Logo/chữ thừa",
+                            "Hình ảnh bạo lực quá mức",
+                            "Màu quá gắt, gây chói",
+                            "Quá nhiều chi tiết phức tạp làm rối tranh"
+                        ]
+                    }]
+                }]
+            }
+            // Add other lessons here following the same structure
+        };
+        
+        function createMultiSelectDropdown(q, questionDiv) {
+            const container = document.createElement('div');
+            container.className = 'multi-select-container';
+
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = q.var;
+
+            const inputDiv = document.createElement('div');
+            inputDiv.className = 'multi-select-input';
+            inputDiv.tabIndex = 0; // Make it focusable
+
+            const textInput = document.createElement('input');
+            textInput.type = 'text';
+            textInput.placeholder = 'Chọn hoặc nhập thêm rồi nhấn Enter...';
+
+            const dropdown = document.createElement('div');
+            dropdown.className = 'multi-select-dropdown';
+
+            let selectedValues = [];
+
+            const updateHiddenInput = () => {
+                hiddenInput.value = selectedValues.join('|||'); // Use a unique separator
+            };
+            
+            const addTag = (value) => {
+                const tag = document.createElement('span');
+                tag.className = 'selected-item-tag';
+                tag.textContent = value;
+                
+                const removeBtn = document.createElement('span');
+                removeBtn.className = 'remove-tag';
+                removeBtn.innerHTML = '&times;';
+                
+                removeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const index = selectedValues.indexOf(value);
+                    if (index > -1) {
+                        selectedValues.splice(index, 1);
+                    }
+                    tag.remove();
+                    updateHiddenInput();
+                    renderDropdownItems();
+                };
+                
+                tag.appendChild(removeBtn);
+                inputDiv.insertBefore(tag, textInput);
+            };
+
+            const renderDropdownItems = () => {
+                 dropdown.innerHTML = '';
+                 q.options.forEach(opt => {
+                    const item = document.createElement('div');
+                    item.className = 'multi-select-dropdown-item';
+                    item.textContent = opt;
+                    if (selectedValues.includes(opt)) {
+                        item.classList.add('selected');
+                    }
+                    item.onclick = () => {
+                        if (selectedValues.includes(opt)) {
+                            // Deselect
+                            const tagToRemove = Array.from(inputDiv.children).find(child => child.textContent.startsWith(opt));
+                            if(tagToRemove) tagToRemove.querySelector('.remove-tag').click();
+                        } else {
+                            // Select
+                            selectedValues.push(opt);
+                            addTag(opt);
+                            updateHiddenInput();
+                        }
+                        renderDropdownItems();
+                    };
+                    dropdown.appendChild(item);
+                });
+            }
+            
+            textInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && textInput.value.trim() !== '') {
+                    e.preventDefault();
+                    const newValue = textInput.value.trim();
+                    if (!selectedValues.includes(newValue)) {
+                        selectedValues.push(newValue);
+                        addTag(newValue);
+                        updateHiddenInput();
+                    }
+                    textInput.value = '';
+                }
+            });
+
+            inputDiv.onclick = () => {
+                textInput.focus();
+                dropdown.classList.add('visible');
+            };
+
+            document.addEventListener('click', (e) => {
+                if (!container.contains(e.target)) {
+                    dropdown.classList.remove('visible');
+                }
+            });
+
+            renderDropdownItems();
+            
+            inputDiv.appendChild(textInput);
+            container.appendChild(hiddenInput);
+            container.appendChild(inputDiv);
+            container.appendChild(dropdown);
+            questionDiv.appendChild(container);
+        }
+
+        function createSuggestionChips(q, textInput) {
+            const chipsContainer = document.createElement('div');
+            chipsContainer.className = 'suggestion-chips-container';
+            const subOptionsContainer = document.createElement('div');
+            subOptionsContainer.className = 'sub-options-container';
+
+            q.suggestionChips.forEach(chipData => {
+                const chip = document.createElement('div');
+                chip.className = 'suggestion-chip';
+                chip.textContent = chipData.title;
+                chip.onclick = () => {
+                    chipsContainer.querySelectorAll('.suggestion-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+
+                    subOptionsContainer.innerHTML = '';
+                    subOptionsContainer.classList.add('visible');
+                    chipData.options.forEach(optionText => {
+                        const subOption = document.createElement('div');
+                        subOption.className = 'sub-option-chip';
+                        subOption.textContent = optionText;
+                        
+                        const currentVal = textInput.value;
+                        const fullOptionText = `${chipData.key}::${optionText}`;
+                        if (currentVal.includes(fullOptionText)) {
+                            subOption.classList.add('selected');
+                        }
+
+                        subOption.onclick = () => {
+                           let currentParts = textInput.value.split('|||').map(p => p.trim()).filter(p => p);
+                           const newPart = `${chipData.key}::${optionText}`; // key::value format
+                           const existingIndex = currentParts.indexOf(newPart);
+
+                           if (existingIndex > -1) {
+                               currentParts.splice(existingIndex, 1);
+                               subOption.classList.remove('selected');
+                           } else {
+                               currentParts.push(newPart);
+                               subOption.classList.add('selected');
+                           }
+                           textInput.value = currentParts.join(' ||| ');
+                        };
+                        subOptionsContainer.appendChild(subOption);
+                    });
+                };
+                chipsContainer.appendChild(chip);
+            });
+
+            return {
+                chipsContainer,
+                subOptionsContainer
+            };
+        }
+
+        function createQuestionElement(q, idx) {
+            const div = document.createElement("div");
+            div.className = "question";
+
+            const headerDiv = document.createElement("div");
+            headerDiv.className = "question-header";
+
+            const label = document.createElement("p");
+            label.textContent = `${idx + 1}. ${q.text}`;
+            headerDiv.appendChild(label);
+            div.appendChild(headerDiv);
+
+            if (q.type === "multi-select") {
+                createMultiSelectDropdown(q, div);
+            } else if (q.type === "text_with_suggestion_chips") {
+                const textInput = document.createElement("textarea");
+                textInput.name = q.var;
+                textInput.placeholder = "Chọn gợi ý hoặc tự nhập...";
+                textInput.rows = 4;
+                // Removed readOnly attribute
+
+                const toggleChipsBtn = document.createElement('button');
+                toggleChipsBtn.type = 'button';
+                toggleChipsBtn.className = 'toggle-chips-btn';
+                toggleChipsBtn.innerHTML = `<i class="fas fa-chevron-down"></i> Chọn gợi ý`;
+                headerDiv.appendChild(toggleChipsBtn);
+
+                const chipsElements = createSuggestionChips(q, textInput);
+                const chipsContainer = chipsElements.chipsContainer;
+                const subOptionsContainer = chipsElements.subOptionsContainer;
+
+                div.appendChild(textInput);
+                div.appendChild(chipsContainer);
+                div.appendChild(subOptionsContainer);
+
+                toggleChipsBtn.addEventListener('click', () => {
+                    chipsContainer.classList.toggle('visible');
+                    subOptionsContainer.classList.remove('visible');
+                    const icon = toggleChipsBtn.querySelector('i');
+                    icon.classList.toggle('fa-chevron-down');
+                    icon.classList.toggle('fa-chevron-up');
+                });
+            }
+
+            return div;
+        }
+
+        document.getElementById("selectBai").addEventListener("change", function() {
+            const bai = this.value;
+            const questionsContainer = document.getElementById("questions");
+            const form = document.getElementById("formQuestions");
+            form.innerHTML = "";
+            document.getElementById("result").classList.remove("visible");
+            document.getElementById("imageResult").innerHTML = "";
+
+            if (questionsData[bai]) {
+                questionsContainer.style.display = 'block';
+                questionsContainer.classList.add("visible");
+                questionsData[bai].questions.forEach((q, idx) => {
+                    const questionEl = createQuestionElement(q, idx);
+                    form.appendChild(questionEl);
+                });
+            } else {
+                questionsContainer.classList.remove("visible");
+                setTimeout(() => {
+                    questionsContainer.style.display = 'none';
+                }, 500);
+            }
+        });
+
+        function submitAnswers() {
+            const form = document.getElementById("formQuestions");
+            const formData = new FormData(form);
+            const answers = {};
+
+            const allKeys = ["vai_tro", "muc_tieu", "doi_tuong", "nhan_vat_chinh", "hanh_dong", "bieu_cam", "nhan_vat_phu", "boi_canh", "phong_cach", "goc_nhin", "chi_tiet_bat_buoc", "dieu_can_tranh"];
+            allKeys.forEach(key => answers[key] = []);
+
+            for (let [key, value] of formData.entries()) {
+                if (value.trim()) {
+                    if (key === 'noi_dung_chinh' || key === 'ranh_gioi') {
+                        // Handle textareas that might contain user text AND chip selections
+                        const parts = value.split('|||');
+                        parts.forEach(part => {
+                            const trimmedPart = part.trim();
+                            if (trimmedPart.includes('::')) {
+                                const [chipKey, chipValue] = trimmedPart.split('::');
+                                if (chipKey && chipValue && answers[chipKey]) {
+                                    answers[chipKey].push(chipValue);
+                                }
+                            } else if (trimmedPart) { 
+                                // This assumes user text in these fields relates to a default sub-category
+                                // A more robust solution might require better parsing or UI
+                                if (key === 'noi_dung_chinh') answers['nhan_vat_chinh'].push(trimmedPart);
+                                if (key === 'ranh_gioi') answers['chi_tiet_bat_buoc'].push(trimmedPart);
+                            }
+                        });
+                    } else {
+                        answers[key] = value.split('|||');
+                    }
+                }
+            }
+            
+            const hasContent = Object.values(answers).some(arr => arr.length > 0);
+            const outputEl = document.getElementById("output");
+
+            if (!hasContent) {
+                outputEl.textContent = "Vui lòng chọn hoặc nhập ít nhất một tùy chọn để tạo prompt.";
+            } else {
+                 const prompt = (
+                    `Vai trò: Đóng vai ${answers['vai_tro'].join(', ') || 'không xác định'}.\n` +
+                    `Mục tiêu: ${answers['muc_tieu'].join(', ') || 'không xác định'}.\n` +
+                    `Đối tượng: ${answers['doi_tuong'].join(', ') || 'không xác định'}.\n` +
+                    `Nội dung chính: Nhân vật chính ${answers['nhan_vat_chinh'].join(', ') || 'không xác định'}, hành động ${answers['hanh_dong'].join(', ') || 'không xác định'}, ` +
+                    `biểu cảm ${answers['bieu_cam'].join(', ') || 'không xác định'}; nhân vật phụ ${answers['nhan_vat_phu'].join(', ') || 'không xác định'}; ` +
+                    `bối cảnh ${answers['boi_canh'].join(', ') || 'không xác định'}.\n` +
+                    `Phong cách: ${answers['phong_cach'].join(', ') || 'không xác định'}.\n` +
+                    `Ranh giới: Góc nhìn ${answers['goc_nhin'].join(', ') || 'không xác định'}; chi tiết bắt buộc ${answers['chi_tiet_bat_buoc'].join(', ') || 'không xác định'}; ` +
+                    `tránh ${answers['dieu_can_tranh'].join(', ') || 'không xác định'}.`
+                );
+                outputEl.textContent = prompt;
+            }
+
+            const resultContainer = document.getElementById("result");
+            resultContainer.classList.add("visible");
+            resultContainer.scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+
+
+        function copyToClipboard() {
+            const outputText = document.getElementById("output").textContent;
+            const copyButton = document.getElementById("copyButton");
+
+            navigator.clipboard.writeText(outputText).then(() => {
+                const originalText = copyButton.innerHTML;
+                copyButton.innerHTML = `<i class="fas fa-check"></i> Đã sao chép!`;
+                copyButton.classList.add("copied");
+                setTimeout(() => {
+                    copyButton.innerHTML = originalText;
+                    copyButton.classList.remove("copied");
+                }, 2000);
+            }).catch(err => {
+                console.error('Lỗi khi sao chép: ', err);
+                alert("Sao chép thất bại!");
+            });
+        }
+        
+        async function generateImage() {
+            const outputEl = document.getElementById("output");
+            const promptText = outputEl.textContent.trim();
+            const imageResultDiv = document.getElementById("imageResult");
+            
+            if (!promptText || promptText.includes("Vui lòng chọn")) {
+                alert("Vui lòng tạo prompt trước khi sinh ảnh!");
+                return;
+            }
+
+            if (!openAIApiKey) {
+                openAIApiKey = prompt("Vui lòng nhập OPENAI_API_KEY của bạn:");
+                if (!openAIApiKey) {
+                    alert("API Key là bắt buộc để sinh ảnh.");
+                    return;
+                }
+                sessionStorage.setItem('openai_api_key', openAIApiKey);
+            }
+            
+            imageResultDiv.innerHTML = `<p style="text-align: center; color: var(--secondary-color); font-weight: 500;"><i class="fas fa-spinner fa-spin"></i> Đang sinh ảnh, quá trình này có thể mất một chút thời gian...</p>`;
+
+            try {
+                const response = await fetch('https://api.openai.com/v1/images/generations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${openAIApiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: "dall-e-3",
+                        prompt: promptText,
+                        n: 1,
+                        size: "1024x1024",
+                        response_format: "b64_json"
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Lỗi từ API: ${response.status} - ${errorData.error.message}`);
+                }
+                
+                const data = await response.json();
+                const b64Json = data.data[0].b64_json;
+                
+                if (b64Json) {
+                    const imageUrl = `data:image/png;base64,${b64Json}`;
+                    imageResultDiv.innerHTML = `
+                        <h3><i class="fas fa-image"></i> Hình ảnh minh họa:</h3>
+                        <img src="${imageUrl}" alt="Generated image">
+                        <a href="${imageUrl}" download="generated_image.png" class="download-btn">
+                           <i class="fas fa-download"></i> Tải ảnh xuống
+                        </a>
+                    `;
+                } else {
+                     imageResultDiv.innerHTML = `<p style="color: var(--accent-color); text-align: center;">Không nhận được dữ liệu ảnh từ API.</p>`;
+                }
+                
+            } catch (error) {
+                 console.error('Lỗi sinh ảnh:', error);
+                 imageResultDiv.innerHTML = `<p style="color: var(--accent-color); text-align: center;"><i class="fas fa-exclamation-triangle"></i> Đã xảy ra lỗi khi sinh ảnh: ${error.message}. Vui lòng kiểm tra API Key và console để biết thêm chi tiết.</p>`;
+                 sessionStorage.removeItem('openai_api_key'); // Clear invalid key
+                 openAIApiKey = null;
+            }
+        }
+    </script>
+</body>
+
+</html>
